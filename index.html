@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Attendance System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      /* Custom Styles */
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .sidebar-link.active {
+        background-color: #4f46e5;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+      .content-section {
+        display: none;
+        animation: fadeIn 0.5s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      /* Loader styles */
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4f46e5;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex h-screen bg-gray-200">
+      <!-- Sidebar -->
+      <div
+        id="sidebar"
+        class="fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-4 space-y-6 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-200 ease-in-out"
+      >
+        <a href="#" class="flex items-center space-x-2 px-4">
+          <i class="fas fa-user-check fa-2x text-indigo-400"></i>
+          <span class="text-2xl font-extrabold text-white">Attendance</span>
+        </a>
+        <nav class="space-y-2">
+          <a
+            href="#dashboard"
+            class="sidebar-link active flex items-center space-x-3 hover:bg-gray-700 rounded-lg p-3"
+          >
+            <i class="fas fa-tachometer-alt fa-fw"></i>
+            <span>Dashboard</span>
+          </a>
+          <a
+            href="#registration"
+            class="sidebar-link flex items-center space-x-3 hover:bg-gray-700 rounded-lg p-3"
+          >
+            <i class="fas fa-user-plus fa-fw"></i>
+            <span>Student Registration</span>
+          </a>
+          <a
+            href="#attendance"
+            class="sidebar-link flex items-center space-x-3 hover:bg-gray-700 rounded-lg p-3"
+          >
+            <i class="fas fa-qrcode fa-fw"></i>
+            <span>Mark Attendance</span>
+          </a>
+          <!-- Other links can be enabled later -->
+        </nav>
+      </div>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="flex justify-between md:justify-end items-center p-4 bg-white border-b"
+        >
+          <button
+            id="menu-btn"
+            class="text-gray-600 focus:outline-none md:hidden"
+          >
+            <i class="fas fa-bars fa-lg"></i>
+          </button>
+          <div class="text-gray-600">
+            <span id="current-date"></span> | <span>Rajkot, GJ</span>
+          </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+          <!-- Dashboard Section -->
+          <section id="dashboard" class="content-section">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+            <div
+              id="dashboard-stats"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              <!-- Stats cards will be populated by JS -->
+            </div>
+            <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+              <h2 class="text-xl font-semibold mb-4">
+                Real-time Attendance Log
+              </h2>
+              <div id="attendance-log-container">
+                <!-- Loader -->
+                <div class="loader"></div>
+                <!-- Attendance log will be populated by JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- Student Registration Section -->
+          <section id="registration" class="content-section">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">
+              Student Registration
+            </h1>
+            <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+              <form id="registrationForm" class="space-y-6">
+                <!-- Form fields from previous version -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      for="student_id"
+                      class="block text-sm font-medium text-gray-700"
+                      >Student ID</label
+                    >
+                    <input
+                      type="text"
+                      id="student_id"
+                      name="student_id"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="student_name"
+                      class="block text-sm font-medium text-gray-700"
+                      >Full Name</label
+                    >
+                    <input
+                      type="text"
+                      id="student_name"
+                      name="student_name"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="date_of_birth"
+                      class="block text-sm font-medium text-gray-700"
+                      >Date of Birth</label
+                    >
+                    <input
+                      type="date"
+                      id="date_of_birth"
+                      name="date_of_birth"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="email"
+                      class="block text-sm font-medium text-gray-700"
+                      >Email</label
+                    >
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="phone_number"
+                      class="block text-sm font-medium text-gray-700"
+                      >Phone Number</label
+                    >
+                    <input
+                      type="tel"
+                      id="phone_number"
+                      name="phone_number"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="enrollment_date"
+                      class="block text-sm font-medium text-gray-700"
+                      >Enrollment Date</label
+                    >
+                    <input
+                      type="date"
+                      id="enrollment_date"
+                      name="enrollment_date"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    for="address"
+                    class="block text-sm font-medium text-gray-700"
+                    >Address</label
+                  >
+                  <textarea
+                    id="address"
+                    name="address"
+                    rows="3"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  ></textarea>
+                </div>
+                <div class="text-right">
+                  <button
+                    type="submit"
+                    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Register Student
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- Mark Attendance Section -->
+          <section id="attendance" class="content-section text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">
+              Mark Attendance
+            </h1>
+            <div class="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+              <h2 class="text-xl font-semibold mb-4">Enter Student ID</h2>
+              <form id="markAttendanceForm">
+                <input
+                  type="text"
+                  id="mark_student_id"
+                  placeholder="e.g., S001"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <button
+                  type="submit"
+                  class="mt-6 w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                  Mark Present
+                </button>
+              </form>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Generic Modal for Messages -->
+    <div
+      id="messageModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 h-full w-full flex items-center justify-center"
+      style="display: none"
+    >
+      <div
+        class="bg-white p-5 rounded-lg shadow-xl text-center w-11/12 md:max-w-md"
+      >
+        <div class="mb-4" id="modal-icon-container">
+          <!-- Icon will be set by JS -->
+        </div>
+        <h3 class="text-lg font-medium text-gray-900" id="modal-title">
+          Message
+        </h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500" id="modal-message">Details here.</p>
+        </div>
+        <div class="items-center px-4 py-3">
+          <button
+            id="modal-ok-btn"
+            class="px-4 py-2 bg-indigo-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // --- Global Variables ---
+        const API_BASE_URL = "http://127.0.0.1:5000";
+
+        // --- Element Selectors ---
+        const sidebarLinks = document.querySelectorAll(".sidebar-link");
+        const contentSections = document.querySelectorAll(".content-section");
+        const menuBtn = document.getElementById("menu-btn");
+        const sidebar = document.getElementById("sidebar");
+        const registrationForm = document.getElementById("registrationForm");
+        const markAttendanceForm =
+          document.getElementById("markAttendanceForm");
+        const messageModal = document.getElementById("messageModal");
+        const modalOkBtn = document.getElementById("modal-ok-btn");
+        const modalTitle = document.getElementById("modal-title");
+        const modalMessage = document.getElementById("modal-message");
+        const modalIconContainer = document.getElementById(
+          "modal-icon-container"
+        );
+
+        // --- Date Display ---
+        const options = {
+          weekday: "short",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        };
+        document.getElementById("current-date").textContent =
+          new Date().toLocaleDateString("en-IN", options);
+
+        // --- Helper Functions ---
+        const showModal = (title, message, isSuccess) => {
+          modalTitle.textContent = title;
+          modalMessage.innerHTML = message; // Use innerHTML to allow for formatted error messages
+          if (isSuccess) {
+            modalIconContainer.innerHTML = `<i class="fas fa-check-circle fa-4x text-green-500"></i>`;
+          } else {
+            modalIconContainer.innerHTML = `<i class="fas fa-times-circle fa-4x text-red-500"></i>`;
+          }
+          messageModal.style.display = "flex";
+        };
+
+        modalOkBtn.addEventListener(
+          "click",
+          () => (messageModal.style.display = "none")
+        );
+
+        // --- API Functions ---
+        const fetchDashboardData = async () => {
+          const statsContainer = document.getElementById("dashboard-stats");
+          const logContainer = document.getElementById(
+            "attendance-log-container"
+          );
+          statsContainer.innerHTML = "";
+          logContainer.innerHTML = '<div class="loader"></div>';
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/attendance`);
+            if (!response.ok) throw new Error("Network response was not ok");
+            const data = await response.json();
+
+            // Calculate stats
+            const total = data.length;
+            const present = data.filter((s) => s.status === "Present").length;
+            const absent = data.filter((s) => s.status === "Absent").length;
+            const attendancePercentage =
+              total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+
+            // Populate stats cards
+            statsContainer.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500">Total Students</p><p class="text-3xl font-bold text-gray-800">${total}</p></div><i class="fas fa-users fa-3x text-indigo-500"></i></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500">Present</p><p class="text-3xl font-bold text-green-500">${present}</p></div><i class="fas fa-user-check fa-3x text-green-500"></i></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500">Absent / Not Marked</p><p class="text-3xl font-bold text-red-500">${
+                          total - present
+                        }</p></div><i class="fas fa-user-minus fa-3x text-red-500"></i></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500">Attendance %</p><p class="text-3xl font-bold text-blue-500">${attendancePercentage}%</p></div><i class="fas fa-percentage fa-3x text-blue-500"></i></div>
+                    `;
+
+            // Populate attendance log
+            logContainer.innerHTML = "";
+            if (data.length === 0) {
+              logContainer.innerHTML =
+                '<p class="text-gray-500 text-center">No students registered yet.</p>';
+            } else {
+              data.forEach((student) => {
+                const statusStyles = {
+                  Present: "bg-green-100 text-green-800",
+                  Absent: "bg-red-100 text-red-800",
+                  "Not Marked": "bg-yellow-100 text-yellow-800",
+                };
+                const recordDiv = document.createElement("div");
+                recordDiv.className =
+                  "flex justify-between items-center py-3 border-b";
+                recordDiv.innerHTML = `
+                                <div class="font-medium text-gray-800">${
+                                  student.name
+                                } <span class="text-sm text-gray-500">(${
+                  student.id
+                })</span></div>
+                                <div class="px-3 py-1 text-sm font-semibold rounded-full ${
+                                  statusStyles[student.status]
+                                }">${student.status}</div>
+                            `;
+                logContainer.appendChild(recordDiv);
+              });
+            }
+          } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+            logContainer.innerHTML =
+              '<p class="text-red-500 text-center">Could not load attendance data. Is the backend server running?</p>';
+          }
+        };
+
+        // --- SPA Navigation Logic ---
+        const showSection = (hash) => {
+          const targetId = hash ? hash.substring(1) : "dashboard";
+          contentSections.forEach((section) => {
+            section.style.display = section.id === targetId ? "block" : "none";
+          });
+          sidebarLinks.forEach((link) => {
+            link.classList.toggle(
+              "active",
+              link.getAttribute("href") === `#${targetId}`
+            );
+          });
+
+          if (targetId === "dashboard") {
+            fetchDashboardData();
+          }
+        };
+
+        sidebarLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.hash = e.currentTarget.getAttribute("href");
+            if (window.innerWidth < 768) {
+              sidebar.classList.add("-translate-x-full");
+            }
+          });
+        });
+
+        window.addEventListener("hashchange", () =>
+          showSection(window.location.hash)
+        );
+        showSection(window.location.hash || "#dashboard");
+
+        // --- Mobile Menu Toggle ---
+        menuBtn.addEventListener("click", () =>
+          sidebar.classList.toggle("-translate-x-full")
+        );
+
+        // --- Form Submission Logic ---
+        registrationForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const studentData = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/register`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(studentData),
+            });
+            const result = await response.json();
+            if (!response.ok)
+              throw new Error(result.error || "Registration failed");
+
+            showModal(
+              "Success!",
+              "Student has been registered successfully.",
+              true
+            );
+            e.target.reset();
+          } catch (error) {
+            console.error("Registration error:", error);
+            showModal("Error!", `Registration failed: ${error.message}`, false);
+          }
+        });
+
+        markAttendanceForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const studentId = document.getElementById("mark_student_id").value;
+          try {
+            const response = await fetch(`${API_BASE_URL}/mark_attendance`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ student_id: studentId }),
+            });
+            const result = await response.json();
+            if (!response.ok)
+              throw new Error(result.error || "Marking attendance failed");
+
+            showModal(
+              "Success!",
+              `Attendance marked as 'Present' for student ${studentId}.`,
+              true
+            );
+            e.target.reset();
+
+            // Refresh dashboard if user is viewing it
+            if (
+              window.location.hash === "#dashboard" ||
+              !window.location.hash
+            ) {
+              setTimeout(fetchDashboardData, 500); // Give a small delay
+            }
+          } catch (error) {
+            console.error("Mark attendance error:", error);
+            showModal(
+              "Error!",
+              `Failed to mark attendance: ${error.message}`,
+              false
+            );
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
